@@ -1,0 +1,26 @@
+{
+  "categories": [
+    "AI/ML",
+    "Systems & Infrastructure",
+    "Programming Languages",
+    "Web & Frontend",
+    "Data & Databases",
+    "Security",
+    "DevOps & Cloud",
+    "Product & Design",
+    "Business & Strategy",
+    "Career & Learning",
+    "Science",
+    "Media & Talks",
+    "Tools & Utilities",
+    "Personal",
+    "Unsorted"
+  ],
+  "descriptionStyle": [
+    "One sentence, at most 160 characters.",
+    "Say what the thing IS and who would want it.",
+    "No marketing adjectives: drop 'powerful', 'seamless', 'revolutionary', 'cutting-edge'.",
+    "Never start with 'This is' or 'A website that'.",
+    "Prefer concrete nouns over vague claims."
+  ]
+}

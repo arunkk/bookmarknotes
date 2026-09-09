@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+.DS_Store
+
+# Raw source dumps — can be large and may contain private message context
+data/inbox/*
+!data/inbox/.gitkeep
+
+# Private overlay: merged client-side, never published
+docs/data/bookmarks.local.json
+
+# Scratch
+*.log
+tmp/
