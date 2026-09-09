@@ -149,8 +149,8 @@ interactive Claude session produce identically-styled descriptions.
 
 ## 4. The site
 
-`docs/` is the Pages root: `index.html`, a handful of ES modules, and plain CSS. No
-bundler, no framework, no build step — pushing the branch *is* the deploy. On load it
+`docs/` is the Pages root: `index.html`, `app.js`, and plain CSS. No bundler, no
+framework, no build step — pushing the branch *is* the deploy. On load it
 fetches `data/bookmarks.json` and `data/taxonomy.json`; everything after that is
 client-side.
 
@@ -203,7 +203,7 @@ something.
 |---|---|
 | M1 | Data model, store module, `validate.mjs`, tests |
 | M2 | Importers: `add`, Chrome, GitHub stars, Slack |
-| M3 | Enrichment skill + `enrich.mjs` |
+| M3 | `enrich.mjs` (the prompt contract in `.claude/skills/enrich-bookmarks/` already exists) |
 | M4 | Site: browse, search, filter — read-only |
 | M5 | Site: token-gated star/notes write-back |
 | M6 | Enable Pages, seed with a real import, verify end to end |
