@@ -13,3 +13,7 @@ docs/data/bookmarks.local.json
 # Scratch
 *.log
 tmp/
+
+# Browser-validation artifacts (SPEC.md §7)
+.playwright-mcp/
+*-live-*.png

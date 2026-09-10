@@ -362,6 +362,13 @@ deployment.
 | 11 | Responsive | Usable at 400 px wide with no horizontal body scroll. |
 | 12 | Accessibility | A Lighthouse a11y pass: keyboard reachability for star/notes/facets, and contrast in both themes. |
 
+**Always cache-bust.** Pages sits behind a CDN, and a browser that has already loaded
+the site will happily hand back the previous version — which reads as a passing run against
+code you did not deploy. This is not hypothetical: the first validation run of this repo
+reported "zero console errors" against a stale copy that did not contain the change being
+tested. Navigate with a unique query string (`?cachebust=<n>`) on every check, and confirm
+something version-specific is actually present in the DOM before trusting any result.
+
 Checks 1–7 and 11–12 need no token and are the pre-push gate. 8–10 run against the deployed
 site as the post-deploy gate.
 
