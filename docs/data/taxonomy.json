@@ -1,6 +1,7 @@
 {
-  "categories": [
+  "groups": [
     "AI/ML",
+    "Agents & Tooling",
     "Systems & Infrastructure",
     "Programming Languages",
     "Web & Frontend",
@@ -13,14 +14,20 @@
     "Science",
     "Media & Talks",
     "Tools & Utilities",
-    "Personal",
-    "Unsorted"
+    "Personal"
   ],
+  "limits": { "maxGroups": 3, "maxTags": 8, "maxDescriptionChars": 160 },
+  "reservedTagPrefixes": ["playlist:", "src:"],
   "descriptionStyle": [
     "One sentence, at most 160 characters.",
     "Say what the thing IS and who would want it.",
     "No marketing adjectives: drop 'powerful', 'seamless', 'revolutionary', 'cutting-edge'.",
     "Never start with 'This is' or 'A website that'.",
     "Prefer concrete nouns over vague claims."
+  ],
+  "notes": [
+    "Groups are tags, not a hierarchy: a bookmark may belong to several at once.",
+    "Ungrouped is groups: [] — there is deliberately no 'Unsorted' group here.",
+    "A slash in a name (AI/ML) is an opaque character, not a path separator."
   ]
 }
