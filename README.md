@@ -10,7 +10,7 @@ instead of dying with a browser cache.
 
 **Live: <https://arunkk.github.io/bookmarknotes/>** — 542 starred repos, described and
 grouped. [`SPEC.md`](SPEC.md) is the design; §9 lists what is built and what is not.
-Still to come: the Chrome, Slack and YouTube importers, and near-duplicate detection.
+Still to come: the Chrome, Slack and YouTube importers.
 
 ## ⚠️ This repo is public
 
@@ -41,6 +41,10 @@ post publicly. If you need private notes, the spec describes a gitignored
 make                                  # list every target
 make import-stars                     # your GitHub stars (542 today; safe to re-run)
 make enrich                           # describe + group new entries via claude -p
+make dedupe                           # what looks duplicated or related (changes nothing)
+make dedupe ARGS=--deep               # also compare every pair by wording
+make dedupe ARGS="--merge A B"        # fold B into A, keeping everything from both
+make dedupe ARGS="--relate A B"       # link two related records, both directions
 make check                            # validate the store
 make test                             # 22 unit tests, no dependencies
 make serve                            # preview at localhost:8000
@@ -51,7 +55,6 @@ make add URL=https://example.com
 make import-chrome FILE=~/Downloads/bookmarks.html
 make import-slack FILE=<slack-export>
 make import-youtube URL=<playlist>
-make dedupe
 ```
 
 ## Claude skills, in this repo
@@ -72,5 +75,6 @@ Both travel with the data they describe, so any clone behaves identically:
 | `docs/data/bookmarks.json` | The store |
 | `docs/data/taxonomy.json` | Curated group names, limits, description style |
 | `tools/` | Importers, dedupe, enrichment, validation |
+| `PRODUCT.md` | Who this is for and what future work must preserve |
 | `.claude/skills/` | The two repo skills above |
 | `data/inbox/` | Raw source dumps (gitignored) |

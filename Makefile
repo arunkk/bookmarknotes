@@ -21,7 +21,9 @@ help:
 	@echo "    make import-youtube URL=<playlist>       playlist or channel       (TODO: M2)"
 	@echo ""
 	@echo "  Curate"
-	@echo "    make dedupe [--merge A B]                near-duplicate report     (TODO: M2)"
+	@echo "    make dedupe [ARGS=--deep]                what looks duplicated or related  "
+	@echo "    make dedupe ARGS=\"--merge A B\"          fold B into A                      "
+	@echo "    make dedupe ARGS=\"--relate A B\"         link two related records            "
 	@echo "    make enrich                              describe + group with claude -p    "
 	@echo "    make rename-group FROM=<a> TO=<b>        rewrite a group name      (TODO: M2)"
 	@echo "    make seed                                stars -> enrich -> check           "
@@ -41,7 +43,10 @@ import-stars:
 add import-chrome import-slack import-youtube:
 	@echo "not yet implemented — see SPEC.md section 3 (milestone M2)"; exit 1
 
-dedupe rename-group:
+dedupe:
+	node tools/dedupe.mjs $(ARGS)
+
+rename-group:
 	@echo "not yet implemented — see SPEC.md section 3.2 (milestone M2)"; exit 1
 
 enrich:

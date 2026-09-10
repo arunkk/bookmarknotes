@@ -382,6 +382,25 @@ select.sort {
 .note-toggle:hover { color: var(--ink); border-color: var(--ink-faint); }
 .note-toggle.has-note { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
 
+.row-related {
+  grid-column: 2;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+.rel {
+  font: inherit;
+  font-size: 12px;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rel:hover { color: var(--ink); }
+
 .note-editor { grid-column: 2; margin-top: 8px; }
 .note-editor textarea {
   width: 100%;

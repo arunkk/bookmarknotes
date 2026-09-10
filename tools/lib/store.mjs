@@ -106,3 +106,48 @@ export function upsertAll(store, incoming) {
   }
   return { records: [...byId.values()], added, merged };
 }
+
+/**
+ * Merge two records into one (SPEC.md 3.2). `keep` survives and its id and url
+ * remain; `drop` is folded in and then removed from the store by the caller.
+ *
+ * Nothing the human wrote is discarded: notes from both are kept under
+ * headings, stars OR together, and the dropped URL is recorded in `mergedFrom`
+ * so a merge stays traceable rather than silently swallowing an address.
+ */
+export function mergePair(keep, drop) {
+  const notes = [];
+  if (keep.notes) notes.push(keep.notes.trim());
+  if (drop.notes) notes.push(`## from ${drop.url}\n\n${drop.notes.trim()}`);
+
+  const older = (a, b) => ((a || '') <= (b || '') ? a : b);
+
+  return {
+    ...keep,
+    title: keep.title || drop.title,
+    description: keep.description || drop.description,
+    groups: uniq([...(keep.groups || []), ...(drop.groups || [])]),
+    tags: uniq([...(keep.tags || []), ...(drop.tags || [])]),
+    starred: Boolean(keep.starred || drop.starred),
+    notes: notes.join('\n\n'),
+    sources: dedupeSources([...(keep.sources || []), ...(drop.sources || [])]),
+    related: uniq([...(keep.related || []), ...(drop.related || [])]).filter(
+      (id) => id !== keep.id && id !== drop.id,
+    ),
+    mergedFrom: uniq([...(keep.mergedFrom || []), ...(drop.mergedFrom || []), drop.url]),
+    meta: { ...drop.meta, ...keep.meta },
+    // The pair is one thing that was saved twice; the earlier date is when it
+    // actually entered the collection.
+    addedAt: older(keep.addedAt, drop.addedAt),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/** Add a symmetric related-link between two records, in place. */
+export function relatePair(a, b) {
+  a.related = uniq([...(a.related || []), b.id]).filter((id) => id !== a.id);
+  b.related = uniq([...(b.related || []), a.id]).filter((id) => id !== b.id);
+  const at = new Date().toISOString();
+  a.updatedAt = at;
+  b.updatedAt = at;
+}

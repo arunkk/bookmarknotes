@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newRecord, mergeRecord, upsertAll } from './store.mjs';
+import { newRecord, mergeRecord, upsertAll, mergePair, relatePair } from './store.mjs';
 
 const starRecord = (over = {}) => ({
   ...newRecord({
@@ -106,4 +106,89 @@ test('a new record starts unstarred, unnoted, and ungrouped', () => {
   assert.deepEqual(r.groups, []);
   assert.equal(r.starred, false);
   assert.equal(r.notes, '');
+});
+
+// A merge is the only destructive operation in the system, and the live corpus
+// currently has zero merge candidates — so these tests are the only thing
+// exercising it. They assert the "never destroy what the human wrote" promise
+// (PRODUCT.md principle 1) field by field.
+
+const pairToMerge = () => {
+  const keep = {
+    ...newRecord({ url: 'https://arxiv.org/abs/1706.03762', title: 'Attention Is All You Need' }),
+    starred: false,
+    notes: 'the original',
+    groups: ['AI/ML'],
+    tags: ['transformers'],
+    addedAt: '2021-01-01T00:00:00.000Z',
+    sources: [{ type: 'slack', ref: '#ml-papers', at: 'x' }],
+  };
+  const drop = {
+    ...newRecord({ url: 'https://example.com/mirror/attention.pdf', title: 'attention.pdf' }),
+    starred: true,
+    notes: 'grabbed the mirror',
+    groups: ['Science'],
+    tags: ['paper'],
+    addedAt: '2019-05-05T00:00:00.000Z',
+    sources: [{ type: 'chrome', ref: 'reading', at: 'y' }],
+  };
+  return { keep, drop };
+};
+
+test('merging keeps a star that lived on either record', () => {
+  const { keep, drop } = pairToMerge();
+  assert.equal(mergePair(keep, drop).starred, true,
+    'the star was a deliberate act; which copy carried it is an accident');
+});
+
+test('merging keeps the notes from both, attributed', () => {
+  const { keep, drop } = pairToMerge();
+  const out = mergePair(keep, drop);
+  assert.match(out.notes, /the original/);
+  assert.match(out.notes, /grabbed the mirror/);
+  assert.match(out.notes, /## from https:\/\/example\.com\/mirror\/attention\.pdf/,
+    'the folded note says where it came from, or it becomes unattributable');
+});
+
+test('merging unions groups and tags across both records', () => {
+  const { keep, drop } = pairToMerge();
+  const out = mergePair(keep, drop);
+  assert.deepEqual(out.groups.sort(), ['AI/ML', 'Science']);
+  assert.deepEqual(out.tags.sort(), ['paper', 'transformers']);
+});
+
+test('merging keeps the earlier addedAt', () => {
+  const { keep, drop } = pairToMerge();
+  assert.equal(mergePair(keep, drop).addedAt, '2019-05-05T00:00:00.000Z',
+    'the collection gained this thing on the earlier date, whichever copy survives');
+});
+
+test('the dropped URL is recorded so a merge stays traceable', () => {
+  const { keep, drop } = pairToMerge();
+  assert.deepEqual(mergePair(keep, drop).mergedFrom, ['https://example.com/mirror/attention.pdf'],
+    'without this the second address is gone and the merge cannot be audited');
+});
+
+test('the surviving record keeps its own id and url', () => {
+  const { keep, drop } = pairToMerge();
+  const out = mergePair(keep, drop);
+  assert.equal(out.id, keep.id);
+  assert.equal(out.url, keep.url);
+});
+
+test('merging never leaves a record related to itself', () => {
+  const { keep, drop } = pairToMerge();
+  keep.related = [drop.id];
+  drop.related = [keep.id];
+  assert.deepEqual(mergePair(keep, drop).related, [],
+    'a self-reference would fail validation and render as a link to nowhere');
+});
+
+test('relating two records is symmetric and idempotent', () => {
+  const a = newRecord({ url: 'https://github.com/3b1b/manim' });
+  const b = newRecord({ url: 'https://github.com/ManimCommunity/manim' });
+  relatePair(a, b);
+  relatePair(a, b);
+  assert.deepEqual(a.related, [b.id], 'relating twice must not duplicate the link');
+  assert.deepEqual(b.related, [a.id], 'the reader needs the link from either side');
 });

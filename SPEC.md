@@ -59,6 +59,7 @@ and keeps merge conflicts local to the one record that changed.
   "sources": [{ "type": "github-stars", "ref": "arunkk", "at": "2026-09-09T12:00:00Z" }],
   "meta": { "siteName": "", "author": "", "published": "", "durationSec": null },
   "related": ["b_1a2b3c4d"],
+  "mergedFrom": ["https://arxiv.org/pdf/1706.03762v5.pdf"],
   "enriched": { "at": "2026-09-09T12:00:00Z", "by": "claude|scrape|human|none" },
   "addedAt": "2026-09-09T12:00:00Z",
   "updatedAt": "2026-09-09T12:00:00Z"
@@ -72,6 +73,9 @@ from the URL makes ids stable across re-imports and makes exact-duplicate detect
 Chrome and Slack, and both origins are worth knowing.
 
 **`groups`** and **`tags`** are both arrays; see §2 for the distinction and the rules.
+
+**`mergedFrom`** is optional and holds the addresses this record absorbed in a merge, so
+the operation is auditable.
 
 **`related`** holds ids of bookmarks the curation pass judged to be about the same thing
 (§3.3). It is advisory: the site renders "related" links from it, and nothing breaks if it
@@ -182,15 +186,40 @@ the same link:
 silent, always on. Every importer and `make add` is idempotent by construction: running the
 same import twice is a no-op on the store.
 
-**Near.** Different canonical URLs that plausibly name one thing — an arXiv abstract and
-the author's PDF mirror, a repo and its docs site, the same talk on YouTube and on a
-conference site. These are **surfaced, never auto-merged**: `make dedupe` reports candidate
-pairs (shared title after normalization, shared `owner/repo`, shared arXiv id, same host
-and >0.9 title similarity) and takes an explicit `--merge <id> <id>` to act. Silent
-automatic merging of things that merely look alike would lose data.
+**Near.** Everything else needs judgment, so `make dedupe` reports and never acts. The
+report has two buckets, because conflating them destroys data:
+
+| Bucket | What it means | Signals | Action |
+|---|---|---|---|
+| **Same resource, two addresses** | One thing reached by a different URL | Same arXiv id; a GitHub deep link whose repo root is already saved | `--merge <keep> <drop>` — lossless |
+| **Same name, different owners** | Different things, possibly one subject | A shared repo basename across owners, reported as a **cluster** and ranked by word/tag overlap | `--relate <id> <id>` — never merge |
+| **Similar wording** (`--deep`) | Same subject, unrelated names | Weighted overlap of title (0.45), description (0.30) and tags (0.25) above 0.30 | `--relate <id> <id>` |
+
+**Same name is not the same thing.** Four unrelated repos in this collection are called
+`skills`, so a name collision never proposes a merge — only a look. Collisions report as
+clusters rather than pairs for two reasons: four repos sharing a name would otherwise
+produce six near-identical entries, and the cluster size is itself the tell — two repos
+sharing a name is interesting, four means the name is generic.
+
+**Name collisions are never hidden behind a score.** Word overlap cannot see that
+"explanatory math videos" and "programmatic mathematical animations" are the same subject
+— `3b1b/manim` and `ManimCommunity/manim` score only 0.23 — so a threshold would silently
+drop real fork families. Every collision is listed, ranked, and labelled with how much to
+trust it. The threshold only decides the wording of the verdict, and gates the `--deep`
+sweep.
+
+**The 0.30 deep threshold comes from the corpus, not taste.** Across 542 records only 14
+pairs score above it, and all 14 are genuinely related — a repo and its own frontend, a
+project and its fork, a CLI and an awesome-list for the same database. An earlier guess of
+0.55 returned nothing at all, because that is above what word overlap reaches for
+paraphrased descriptions.
 
 A merge keeps the older `addedAt`, unions `sources`, `groups`, `tags`, and `related`,
 concatenates `notes` under `## from <url>` headings, and `starred` is true if either was.
+The dropped URL is recorded in **`mergedFrom`** so a merge stays auditable instead of
+silently swallowing an address, and any other record's `related` pointer is repointed at
+the survivor so no dangling id survives. `related` links render on the site; without that,
+`--relate` would be write-only work.
 
 ### 3.3 Grouping related things
 
@@ -324,6 +353,12 @@ Tests use Node's built-in runner (`node --test`), no dependencies, against small
   duplicated by an OR query
 - the ungrouped invariant — `groups: []` is the only representation; no sentinel string
 - taxonomy validation and the `groups: []` fallback on bad LLM output
+- **the merge operation** — that a star on either copy survives, notes from both are kept
+  with attribution, the earlier `addedAt` wins, and the dropped URL is recorded. The live
+  corpus has zero merge candidates, so these tests are the only thing exercising the one
+  destructive operation in the system
+- similarity scoring — that boilerplate wording and a shared generic name both score below
+  the bar, and empty descriptions score zero instead of matching each other
 
 Each test encodes *why* the behavior matters, not merely that the function returns
 something.
@@ -446,7 +481,7 @@ store is never what Pages is serving.
 | # | Scope |
 |---|---|
 | M1 | ✅ Data model, `store.mjs`, `url.mjs` (canonicalization), `validate.mjs`, 22 tests |
-| M2 | GitHub stars ✅; `add`, Chrome, Slack, YouTube playlists and `dedupe` still to build |
+| M2 | GitHub stars ✅, `dedupe` ✅; `add`, Chrome, Slack and YouTube playlists still to build |
 | M3 | ✅ `enrich.mjs` — scrape signals plus a deterministic classifier, then `claude -p` |
 | M4 | ✅ **Seeded** with 542 starred repos; §6.1 outcomes verified |
 | M5 | ✅ Site: browse, multi-select facets, search, sort, deep links |

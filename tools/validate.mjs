@@ -71,6 +71,19 @@ for (const r of store) {
   if (!Array.isArray(r.sources)) err(id, 'sources is not an array');
   if (!ENRICHED_BY.has(r.enriched?.by)) err(id, `unknown enriched.by "${r.enriched?.by}"`);
 
+  // mergedFrom is the audit trail for a merge: the addresses this record
+  // absorbed. Optional, but when present it must be usable URLs.
+  if (r.mergedFrom !== undefined) {
+    if (!Array.isArray(r.mergedFrom)) err(id, 'mergedFrom is not an array');
+    else {
+      for (const u of r.mergedFrom) {
+        if (typeof u !== 'string' || !u) err(id, 'mergedFrom holds a non-string');
+        else if (u === r.url) err(id, 'mergedFrom lists this record\'s own url');
+      }
+      if (new Set(r.mergedFrom).size !== r.mergedFrom.length) err(id, 'duplicate mergedFrom urls');
+    }
+  }
+
   if (!Array.isArray(r.related)) err(id, 'related is not an array');
   else {
     for (const rel of r.related) {
@@ -92,6 +105,8 @@ const undescribed = store.filter((r) => !r.description).length;
 console.log(`${store.length} records, ${allowed.size} groups in taxonomy`);
 console.log(`  ungrouped: ${ungrouped} (${store.length ? ((100 * ungrouped) / store.length).toFixed(1) : 0}%)`);
 console.log(`  without description: ${undescribed}`);
+console.log(`  with related links: ${store.filter((r) => r.related?.length).length}`);
+console.log(`  merged previously: ${store.filter((r) => r.mergedFrom?.length).length}`);
 
 if (errors.length) {
   console.error(`\n${errors.length} validation errors:`);
