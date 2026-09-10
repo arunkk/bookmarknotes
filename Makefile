@@ -15,45 +15,48 @@ help:
 	@echo ""
 	@echo "  Import"
 	@echo "    make add URL=<url> [KIND=<kind>]          one bookmark              (TODO: M2)"
-	@echo "    make import-stars                        your GitHub stars         (TODO: M2)"
+	@echo "    make import-stars                        your GitHub stars                  "
 	@echo "    make import-chrome FILE=<bookmarks.html> Chrome bookmarks          (TODO: M2)"
 	@echo "    make import-slack [FILE=<export-dir>]    links from Slack          (TODO: M2)"
 	@echo "    make import-youtube URL=<playlist>       playlist or channel       (TODO: M2)"
 	@echo ""
 	@echo "  Curate"
 	@echo "    make dedupe [--merge A B]                near-duplicate report     (TODO: M2)"
-	@echo "    make enrich                              describe + group          (TODO: M3)"
+	@echo "    make enrich                              describe + group with claude -p    "
 	@echo "    make rename-group FROM=<a> TO=<b>        rewrite a group name      (TODO: M2)"
-	@echo "    make seed                                stars -> enrich -> check  (TODO: M4)"
+	@echo "    make seed                                stars -> enrich -> check           "
 	@echo ""
 	@echo "  Verify and ship"
-	@echo "    make check                               validate the store        (TODO: M1)"
-	@echo "    make test                                unit tests                (TODO: M1)"
+	@echo "    make check                               validate the store                 "
+	@echo "    make test                                unit tests                         "
 	@echo "    make serve                               preview at localhost:$(PORT)"
 	@echo "    make publish                             create repo + enable Pages (one time)"
 	@echo "    make deploy                              check, pull, push"
 	@echo ""
 	@echo "  Store: $(STORE)    Repo: $(REPO)"
 
-add import-stars import-chrome import-slack import-youtube:
+import-stars:
+	node tools/import-stars.mjs
+
+add import-chrome import-slack import-youtube:
 	@echo "not yet implemented — see SPEC.md section 3 (milestone M2)"; exit 1
 
 dedupe rename-group:
 	@echo "not yet implemented — see SPEC.md section 3.2 (milestone M2)"; exit 1
 
 enrich:
-	@echo "not yet implemented — see SPEC.md section 4 (milestone M3)"; exit 1
+	node tools/enrich.mjs $(ARGS)
 
 seed:
-	@echo "not yet implemented — see SPEC.md section 6.1 (milestone M4)"; exit 1
+	$(MAKE) import-stars
+	$(MAKE) enrich
+	$(MAKE) check
 
 check:
-	@echo "not yet implemented — see SPEC.md section 6 (milestone M1)"
-	@echo "interim check: JSON parses"
-	@node -e "JSON.parse(require('fs').readFileSync('$(STORE)','utf8'));JSON.parse(require('fs').readFileSync('$(TAXONOMY)','utf8'));console.log('  ok: $(STORE), $(TAXONOMY)')"
+	node tools/validate.mjs
 
 test:
-	@echo "no tests yet — see SPEC.md section 6 (milestone M1)"
+	node --test 'tools/**/*.test.mjs'
 
 serve:
 	@echo "http://localhost:$(PORT)"

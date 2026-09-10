@@ -17,3 +17,4 @@ tmp/
 # Browser-validation artifacts (SPEC.md §7)
 .playwright-mcp/
 *-live-*.png
+bn-*.png

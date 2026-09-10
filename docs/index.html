@@ -1,11 +1,96 @@
 <!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BookmarkNotes</title>
+<meta name="description" content="A searchable index of saved links — repos, papers, videos and docs — grouped by subject.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='28'>%F0%9F%94%96</text></svg>">
-<style>
-  body { font: 16px/1.6 system-ui, sans-serif; max-width: 42rem; margin: 4rem auto; padding: 0 1.5rem; }
-  code { background: #8881; padding: .15em .4em; border-radius: 3px; }
-</style>
-<h1>BookmarkNotes</h1>
-<p>Placeholder. The design lives in <code>SPEC.md</code>; the site itself is milestone M4.</p>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1 class="wordmark">bookmark<span>notes</span></h1>
+    <p class="tally" id="tally"></p>
+    <div class="search-wrap">
+      <label for="search" class="sr-only" hidden>Search bookmarks</label>
+      <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Search titles, descriptions, tags, notes">
+      <button class="clear-search" id="clear-search" type="button" title="Clear search" hidden>&times;</button>
+    </div>
+    <div class="masthead-actions">
+      <button class="btn btn-filters" id="toggle-filters" type="button" aria-expanded="false" aria-controls="rail">Filters</button>
+      <button class="btn" id="starred-only" type="button" aria-pressed="false" title="Show only starred">Starred</button>
+      <button class="btn" id="open-settings" type="button">Settings</button>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <nav class="rail" id="rail" aria-label="Filters">
+    <section>
+      <h2>
+        Groups
+        <button class="mode-toggle" id="group-mode" type="button" title="Switch between matching all or any selected group">any</button>
+      </h2>
+      <ul class="facets" id="group-facets"></ul>
+      <p class="rail-note">A bookmark can sit in several groups at once, so counts add up to more than the total.</p>
+    </section>
+    <section>
+      <h2>Kind</h2>
+      <ul class="facets" id="kind-facets"></ul>
+    </section>
+    <section>
+      <h2>Tags</h2>
+      <ul class="facets" id="tag-facets"></ul>
+    </section>
+  </nav>
+
+  <div>
+    <div class="results-head">
+      <p class="result-count" id="result-count"></p>
+      <div class="chips-active" id="active-filters"></div>
+      <label for="sort" hidden>Sort</label>
+      <select class="sort" id="sort">
+        <option value="stars">Most starred on GitHub</option>
+        <option value="recent">Recently added</option>
+        <option value="updated">Recently updated upstream</option>
+        <option value="title">Title A–Z</option>
+      </select>
+    </div>
+    <ul class="list" id="list"></ul>
+    <div class="more-wrap" id="more-wrap" hidden>
+      <button class="btn" id="more" type="button">Show more</button>
+    </div>
+  </div>
+</main>
+
+<dialog class="settings" id="settings">
+  <form class="settings-body" method="dialog" id="settings-form">
+    <h2>Saving stars and notes</h2>
+    <p>
+      Stars and notes are written straight back to this repository as commits, so they
+      follow you to any browser. That needs a GitHub token with permission to change this
+      one repo. Without it, everything here stays readable but nothing can be edited.
+    </p>
+    <label for="token">Fine-grained token &mdash; Contents: read and write, this repo only</label>
+    <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+    <p class="settings-hint">
+      Kept in this browser only and sent only to api.github.com. Create one at
+      <code>github.com/settings/personal-access-tokens</code>. Anything you write here is
+      public, because the repository is public.
+    </p>
+    <div class="settings-actions">
+      <button class="btn" type="button" id="forget-token">Forget token</button>
+      <button class="btn btn-primary" type="submit">Save token</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

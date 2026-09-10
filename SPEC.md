@@ -5,7 +5,8 @@ playlists, mp3s — collected from scattered sources, each carrying a short auto
 description, grouped by overlapping tags, and browsable *and editable* as a real web page
 on GitHub Pages.
 
-Status: **design approved, implementation pending** (see [Milestones](#9-milestones)).
+Status: **live** at <https://arunkk.github.io/bookmarknotes/> with the 542-repo seed corpus.
+Importers for Chrome, Slack and YouTube are still to come (see [Milestones](#9-milestones)).
 
 ---
 
@@ -217,6 +218,13 @@ This is the highest-risk behavior in the system, so it is asserted directly by a
 `make enrich` runs `tools/enrich.mjs` over records with an empty `description` or empty
 `groups`. Flags: `--all`, `--id <id>`, `--force`.
 
+**Step 0 — classify deterministically, no LLM.** GitHub topics, language, and description
+words are matched against an inspectable rule table (`tools/lib/classify.mjs`). Most repos
+carry topics that map to a shelf unambiguously, and an LLM call for
+`topics: ["postgres","database"]` is waste. On the seed corpus this grouped 62% of records
+for free. When no rule matches, the record contributes nothing and falls through to the LLM
+rather than being guessed at: a wrong group hides, an empty one surfaces in Ungrouped.
+
 **Step 1 — scrape, no LLM.** HTTP GET with a 10s timeout and a real user agent, then read
 `<title>`, `og:title`, `og:description`, `og:site_name`, and `meta[name=description]`.
 YouTube URLs go to the oEmbed endpoint instead. PDFs get a range request for the first
@@ -282,10 +290,14 @@ burst of typing produces one commit rather than one per keystroke. On a 409 `sha
 re-`GET`, re-apply only the changed field, retry once, then surface an error banner —
 an edit is never silently dropped.
 
-**Scale.** The seed corpus alone is ~542 records and will grow. The store is one fetch, so
-rendering is virtualized (render the visible window, not 5,000 cards), and the search index
-is built once on load. If the file ever passes ~5 MB, §9/M7 covers sharding it by group —
-not before, since a single file is what makes the write path simple.
+**Scale.** The seed corpus is 542 records and will grow. The store is one fetch, and
+rendering is **paged**: 60 rows initially, extended by an IntersectionObserver as you
+scroll. This is not true virtualization — the DOM grows to the number of matches (542
+today) and rows are never recycled — which is fine at this size and measured in §7 check 10
+rather than assumed. A deep link near the end of the list renders everything before it. If
+the corpus reaches a few thousand, that is when windowed rendering earns its complexity.
+If the file passes ~5 MB, M8 covers sharding by group — not before, since a single file is
+what makes the write path simple.
 
 **Addressability.** `?q=`, `?g=` (repeatable), and `?tag=` are reflected in the URL so a
 filtered view is shareable; `#/b/<id>` deep-links a single record. Keyboard: `/` focuses
@@ -332,7 +344,10 @@ needs proving.
 - every record has a description — repos with a `null` description exercise the scrape and
   LLM path rather than being skipped
 - fewer than 10% of records land `groups: []`; a higher rate means the taxonomy is missing
-  a shelf, and the fix is the taxonomy, not per-record patching
+  a shelf, and the fix is the taxonomy, not per-record patching.
+  **Result: 9 of 542 (1.7%) ungrouped, 8 without a description.** The deterministic topic
+  classifier handled 62% of grouping for free; `claude -p` grouped the remaining 271 in 14
+  batches with 0 failures
 - `make dedupe` candidate pairs get eyeballed once; the awesome-lists in particular should
   cluster via shared topics
 
@@ -430,13 +445,13 @@ store is never what Pages is serving.
 
 | # | Scope |
 |---|---|
-| M1 | Data model, `store.mjs`, `url.mjs` (canonicalization), `validate.mjs`, tests |
-| M2 | Importers: `add`, GitHub stars, Chrome, Slack, YouTube playlists; `dedupe` |
-| M3 | `enrich.mjs` (the `enrich-bookmarks` contract already exists) |
-| M4 | **Seed** with the 542 starred repos and verify §6.1 — the first real end-to-end proof |
-| M5 | Site: browse, multi-select facets, search, filter — read-only |
-| M6 | Site: token-gated star/notes/group write-back |
-| M7 | Publish (§8.1), then the §7 browser validation against the live URL |
+| M1 | ✅ Data model, `store.mjs`, `url.mjs` (canonicalization), `validate.mjs`, 22 tests |
+| M2 | GitHub stars ✅; `add`, Chrome, Slack, YouTube playlists and `dedupe` still to build |
+| M3 | ✅ `enrich.mjs` — scrape signals plus a deterministic classifier, then `claude -p` |
+| M4 | ✅ **Seeded** with 542 starred repos; §6.1 outcomes verified |
+| M5 | ✅ Site: browse, multi-select facets, search, sort, deep links |
+| M6 | Site: token-gated star/notes write-back — built, not yet exercised against a real token |
+| M7 | ✅ Published; §7 checks 1–7 and 11–12 pass. Checks 8–10 need a token |
 | M8 | *If and only if the store passes ~5 MB:* shard by group |
 
 M4 lands before any UI exists, on purpose: a real 542-record store is what makes the site's

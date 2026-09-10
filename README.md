@@ -8,8 +8,9 @@ browsable as a real web page on GitHub Pages.
 Stars and notes are saved back into this repo as commits, so they follow you across devices
 instead of dying with a browser cache.
 
-> **Status: design only.** [`SPEC.md`](SPEC.md) is the approved design. The tools and the
-> site are not implemented yet — see the milestones in §9.
+**Live: <https://arunkk.github.io/bookmarknotes/>** — 542 starred repos, described and
+grouped. [`SPEC.md`](SPEC.md) is the design; §9 lists what is built and what is not.
+Still to come: the Chrome, Slack and YouTube importers, and near-duplicate detection.
 
 ## ⚠️ This repo is public
 
@@ -38,17 +39,19 @@ post publicly. If you need private notes, the spec describes a gitignored
 
 ```sh
 make                                  # list every target
-make import-stars                     # your GitHub stars (the seed corpus: 542 repos)
-make import-youtube URL=<playlist>    # a playlist, expanded per video
-make import-chrome FILE=~/Downloads/bookmarks.html
-make import-slack FILE=<slack-export> # or write data/inbox/slack-links.json
-make add URL=https://example.com      # one-off link
-make enrich                           # describe + group new entries
-make dedupe                           # near-duplicate candidates to review
+make import-stars                     # your GitHub stars (542 today; safe to re-run)
+make enrich                           # describe + group new entries via claude -p
 make check                            # validate the store
+make test                             # 22 unit tests, no dependencies
 make serve                            # preview at localhost:8000
-make publish                          # one time: create the repo, enable Pages
 make deploy                           # check, pull, push
+
+# not built yet:
+make add URL=https://example.com
+make import-chrome FILE=~/Downloads/bookmarks.html
+make import-slack FILE=<slack-export>
+make import-youtube URL=<playlist>
+make dedupe
 ```
 
 ## Claude skills, in this repo
