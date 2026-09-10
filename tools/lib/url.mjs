@@ -73,6 +73,14 @@ export function canonicalUrl(input) {
     }
   }
 
+  if (host === 'x.com' || host === 'twitter.com' || host === 'mobile.twitter.com') {
+    // A tweet is named by owner/status/id. Everything else on these URLs is
+    // share provenance: ?s=12, ?s=46, ?t=..., which would otherwise mint a new
+    // id for every place the same tweet was copied from.
+    const m = u.pathname.match(/^\/([^/]+)\/status\/(\d+)/);
+    if (m) return `https://x.com/${m[1]}/status/${m[2]}`;
+  }
+
   if (host === 'arxiv.org') {
     // abs/, pdf/, and versioned forms all name one paper.
     const m = u.pathname.match(/\/(?:abs|pdf)\/(.+?)(?:v\d+)?(?:\.pdf)?$/);

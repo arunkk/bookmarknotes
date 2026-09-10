@@ -146,17 +146,29 @@ function findCandidates(store, { deep }) {
     for (const [a, b] of pairs(group)) pushMerge(a, b, `same arXiv id ${id}`);
   }
 
-  // --- structural: a deep link into a repo already saved at its root ----
+  // --- structural: a link to a repo's own front page ---------------------
+  // Only a README or a bare branch view IS the repo. A link to one example
+  // file, a notebook, or a pull request is a pointer to that specific thing —
+  // merging it into the root would bury exactly what was worth saving. Those
+  // are surfaced as related instead.
   const repoRoots = new Map();
   for (const r of store) {
     const repo = githubRepo(r.url);
     if (repo && r.url === `https://github.com/${repo}`) repoRoots.set(repo, r);
   }
+  const deepIntoSavedRepo = [];
   for (const r of store) {
     const repo = githubRepo(r.url);
     if (!repo || r.url === `https://github.com/${repo}`) continue;
     const root = repoRoots.get(repo);
-    if (root) pushMerge(root, r, `deep link into ${repo}, whose root is already saved`);
+    if (!root) continue;
+    const rest = r.url.slice(`https://github.com/${repo}/`.length);
+    const isFrontPage = /^(?:blob\/[^/]+\/readme(?:\.[a-z]+)?|tree\/[^/]+)$/i.test(rest);
+    if (isFrontPage) {
+      pushMerge(root, r, `${repo} front page, and the repo is already saved`);
+    } else {
+      deepIntoSavedRepo.push({ repo, root, deep: r, rest });
+    }
   }
 
   // --- relational: name collisions, as clusters ------------------------
@@ -191,12 +203,13 @@ function findCandidates(store, { deep }) {
     merge,
     clusters: clusters.sort((x, y) => y.score - x.score),
     deepPairs: deepPairs.sort((x, y) => y.score - x.score),
+    deepIntoSavedRepo,
   };
 }
 
 /* ---------------- report ---------------- */
 
-function report(store, { merge, clusters, deepPairs }, deep) {
+function report(store, { merge, clusters, deepPairs, deepIntoSavedRepo }, deep) {
   if (flag('--json')) {
     const rec = (r) => ({ id: r.id, title: r.title, url: r.url });
     console.log(
@@ -234,6 +247,21 @@ function report(store, { merge, clusters, deepPairs }, deep) {
       console.log(`    keep  ${short(a)}`);
       console.log(`    drop  ${short(b)}`);
       console.log(`    node tools/dedupe.mjs --merge ${a.id} ${b.id}`);
+    }
+  }
+
+  console.log(
+    `\nA specific file or PR inside a repo you already have: ${deepIntoSavedRepo.length}`,
+  );
+  if (!deepIntoSavedRepo.length) {
+    console.log('  None.');
+  } else {
+    console.log('  Keep both: the deep link is the part that was worth saving.\n');
+    for (const { repo, root, deep: d, rest } of deepIntoSavedRepo) {
+      console.log(`  ${repo} -> ${rest}`);
+      console.log(`      ${short(root)}`);
+      console.log(`      ${short(d)}`);
+      console.log(`    node tools/dedupe.mjs --relate ${root.id} ${d.id}`);
     }
   }
 

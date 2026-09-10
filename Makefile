@@ -17,7 +17,7 @@ help:
 	@echo "    make add URL=<url> [KIND=<kind>]          one bookmark              (TODO: M2)"
 	@echo "    make import-stars                        your GitHub stars                  "
 	@echo "    make import-chrome FILE=<bookmarks.html> Chrome bookmarks          (TODO: M2)"
-	@echo "    make import-slack [FILE=<export-dir>]    links from Slack          (TODO: M2)"
+	@echo "    make import-slack [FILE=<export-dir>]    links from Slack                  "
 	@echo "    make import-youtube URL=<playlist>       playlist or channel       (TODO: M2)"
 	@echo ""
 	@echo "  Curate"
@@ -40,7 +40,10 @@ help:
 import-stars:
 	node tools/import-stars.mjs
 
-add import-chrome import-slack import-youtube:
+import-slack:
+	node tools/import-slack.mjs $(ARGS)
+
+add import-chrome import-youtube:
 	@echo "not yet implemented — see SPEC.md section 3 (milestone M2)"; exit 1
 
 dedupe:

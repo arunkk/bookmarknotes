@@ -99,3 +99,20 @@ test('empty input throws rather than producing a bogus id', () => {
   // A silently-generated id for nothing would be an unremovable ghost record.
   assert.throws(() => canonicalUrl(''), /empty input/);
 });
+
+test('tweet share parameters do not create separate ids', () => {
+  // The same tweet copied from the app, the web and a share sheet arrives as
+  // ?s=12, ?s=46 and ?t=…; treating those as distinct would duplicate it.
+  const shapes = [
+    'https://x.com/dzhng/status/2090252351533973768',
+    'https://x.com/dzhng/status/2090252351533973768?s=46',
+    'https://twitter.com/dzhng/status/2090252351533973768?s=20&t=abc',
+    'https://mobile.twitter.com/dzhng/status/2090252351533973768',
+  ];
+  assert.equal(new Set(shapes.map(makeId)).size, 1);
+});
+
+test('an x.com profile or non-status path is left alone', () => {
+  // Only a tweet has the owner/status/id shape; do not rewrite anything else.
+  assert.equal(canonicalUrl('https://x.com/dzhng'), 'https://x.com/dzhng');
+});

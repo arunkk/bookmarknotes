@@ -10,7 +10,7 @@ instead of dying with a browser cache.
 
 **Live: <https://arunkk.github.io/bookmarknotes/>** — 542 starred repos, described and
 grouped. [`SPEC.md`](SPEC.md) is the design; §9 lists what is built and what is not.
-Still to come: the Chrome, Slack and YouTube importers.
+Still to come: the Chrome and YouTube importers, and `make add`.
 
 ## ⚠️ This repo is public
 
@@ -28,6 +28,9 @@ post publicly. If you need private notes, the spec describes a gitignored
 - **Import** — zero-dependency Node scripts pull from each source and dedupe on one
   canonical URL function. Re-importing never overwrites a star, a note, or a group you set
   yourself.
+- **Nothing private gets published** — imports carry the URL and nothing else, and every
+  URL is checked against a refusal list (private addresses, internal hosts, private docs,
+  credentials in query strings) before it can become a record.
 - **Enrich** — a metadata scrape, then `claude -p` turns the scraped facts into a one-line
   description and picks groups from the curated taxonomy.
 - **Site** — plain HTML/JS in `docs/`, no build step. Read-only for visitors; with a
@@ -40,7 +43,8 @@ post publicly. If you need private notes, the spec describes a gitignored
 ```sh
 make                                  # list every target
 make import-stars                     # your GitHub stars (542 today; safe to re-run)
-make enrich                           # describe + group new entries via claude -p
+make import-slack                     # links from a Slack channel via data/inbox/
+make enrich                           # scrape each page, then describe + group via claude -p
 make dedupe                           # what looks duplicated or related (changes nothing)
 make dedupe ARGS=--deep               # also compare every pair by wording
 make dedupe ARGS="--merge A B"        # fold B into A, keeping everything from both
@@ -53,7 +57,6 @@ make deploy                           # check, pull, push
 # not built yet:
 make add URL=https://example.com
 make import-chrome FILE=~/Downloads/bookmarks.html
-make import-slack FILE=<slack-export>
 make import-youtube URL=<playlist>
 ```
 

@@ -192,3 +192,24 @@ test('relating two records is symmetric and idempotent', () => {
   assert.deepEqual(a.related, [b.id], 'relating twice must not duplicate the link');
   assert.deepEqual(b.related, [a.id], 'the reader needs the link from either side');
 });
+
+test('a union that would exceed the tag cap is trimmed, keeping the earlier tags', () => {
+  // Real failure: a repo imported from stars with 8 topic tags, then seen in
+  // Slack, gained a 9th and made the whole store fail validation.
+  const mine = starRecord({ tags: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] });
+  const after = mergeRecord(mine, starRecord({ tags: ['src:slack'] }));
+  assert.equal(after.tags.length, 8, 'the cap is what validate enforces, so the merge must respect it');
+  assert.deepEqual(after.tags, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
+    'the established tags survive; the incoming surplus is what drops');
+});
+
+test('a union within the cap is untouched', () => {
+  const mine = starRecord({ tags: ['a', 'b'] });
+  assert.deepEqual(mergeRecord(mine, starRecord({ tags: ['c'] })).tags.sort(), ['a', 'b', 'c']);
+});
+
+test('a group union is capped too', () => {
+  const mine = starRecord({ groups: ['AI/ML', 'Security', 'Science'] });
+  const after = mergeRecord(mine, starRecord({ groups: ['Personal'] }));
+  assert.equal(after.groups.length, 3);
+});

@@ -11,6 +11,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { loadStore, saveStore, loadTaxonomy } from './lib/store.mjs';
+import { scrapeAll } from './lib/scrape.mjs';
 
 const SKILL = '.claude/skills/enrich-bookmarks/SKILL.md';
 const BATCH = 20;
@@ -68,7 +69,7 @@ function validate(item, byId, taxonomy) {
   };
 }
 
-const main = () => {
+const main = async () => {
   const taxonomy = loadTaxonomy();
   const store = loadStore();
   const byId = new Map(store.map((r) => [r.id, r]));
@@ -90,6 +91,45 @@ const main = () => {
   }
 
   const contract = skillBody();
+
+  // Step 1 of SPEC.md 4: ask each page what it is, before asking the model to
+  // summarise it. Without this the model gets a URL and must invent.
+  process.stdout.write(`scraping ${targets.length} pages`);
+  const scraped = await scrapeAll(
+    targets.map((r) => ({ url: r.url, kind: r.kind })),
+    {
+      onProgress: (done, total) => {
+        if (done % 25 === 0 || done === total) process.stdout.write(`\r  scraped ${done}/${total}   `);
+      },
+    },
+  );
+  const scrapeFailed = scraped.filter((x) => x.error).length;
+  console.log(
+    `\n  ${targets.length - scrapeFailed} pages answered, ${scrapeFailed} did not (dead links, timeouts, bot walls)`,
+  );
+
+  // A URL-derived title ("github.com/foo/bar") is a placeholder from the Slack
+  // importer. A real page title beats it — except for repos, where owner/repo
+  // is already the clearest name.
+  const scrapedById = new Map(targets.map((r, i) => [r.id, scraped[i]]));
+  let retitled = 0;
+  for (const r of targets) {
+    const sc = scrapedById.get(r.id) || {};
+    const host = (() => {
+      try {
+        return new URL(r.url).hostname.replace(/^www\./, '');
+      } catch {
+        return '';
+      }
+    })();
+    const placeholder = host && (r.title === host || r.title.startsWith(`${host}/`) || r.title === `${host} video`);
+    if (placeholder && r.kind !== 'repo' && sc.title) {
+      r.title = sc.title.slice(0, 120);
+      retitled++;
+    }
+  }
+  if (retitled) console.log(`  ${retitled} placeholder titles replaced with the page's own title`);
+
   const batches = [];
   for (let i = 0; i < targets.length; i += BATCH) batches.push(targets.slice(i, i + BATCH));
   console.log(`enriching ${targets.length} records in ${batches.length} batches of <=${BATCH}`);
@@ -104,12 +144,14 @@ const main = () => {
       url: r.url,
       kind: r.kind,
       scraped: {
-        title: r.title,
-        ogDescription: r.description,
-        siteName: r.meta?.siteName || '',
+        title: scrapedById.get(r.id)?.title || r.title,
+        ogDescription: scrapedById.get(r.id)?.description || r.description,
+        siteName: scrapedById.get(r.id)?.siteName || r.meta?.siteName || '',
+        author: scrapedById.get(r.id)?.author || '',
         metaDescription: '',
         topics: r.tags || [],
         language: r.meta?.language || '',
+        fetchError: scrapedById.get(r.id)?.error || '',
       },
       context: (r.sources || []).map((s) => `${s.type} ${s.ref ?? ''}`).join(', '),
     }));
@@ -171,4 +213,4 @@ const main = () => {
   }
 };
 
-main();
+await main();

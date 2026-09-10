@@ -159,6 +159,31 @@ half-imported playlist that claims success is worse than a refusal.
 Anything can produce it — a Slack export, a script, or an interactive Claude session using
 the Slack MCP server. The importer only has to understand this one shape.
 
+### 3.0 Publishability — refusing what must not be published
+
+The repository is public (§0), and a personal Slack channel is not a curated feed: the real
+source channel holds API keys, passwords, internal hostnames, private documents and notes
+about colleagues interleaved with the links. Two rules make that safe, and both are
+enforced in code rather than by careful reading:
+
+1. **Only the URL is ever imported.** Slack message text does not enter the pipeline at
+   all — not into `notes`, not into `description`, not into the inbox file. A `context`
+   field exists in the contract but the Slack importer does not read it.
+2. **Every URL passes `rejectReason()`** (`tools/lib/private.mjs`) before becoming a
+   record. It refuses private and loopback addresses, hosts under the corporate domain,
+   internal EC2/ELB hostnames, private assistant sessions and shares, Google Docs and
+   Drive, and any URL carrying a credential in its query string. Each refusal is reported
+   with its reason so a false positive is visible; the override is a deliberate
+   `make add URL=…`, never a loosened filter.
+
+On the real channel this refused 9 of 336 links: 4 internal company hosts, 2 private
+documents, 2 assistant sessions, 1 internal cloud hostname.
+
+The narrow rules matter as much as the broad ones. `github.com/percipient-ai/…` is a
+different host from `*.percipient.ai` and stays publishable; `aws.amazon.com` blog posts
+stay publishable while `*.compute.amazonaws.com` does not; `?q=…` is not a credential. Each
+of those distinctions has a test.
+
 ### 3.1 Canonicalization — the basis of all deduping
 
 Every importer routes its URLs through one `canonicalUrl()` in `tools/lib/url.mjs`. One
@@ -177,6 +202,8 @@ the same link:
      playlist's identity only for `kind: "playlist"` records.
    - GitHub — `owner/repo` (deep links to a file or tree keep their path; a repo root,
      `/tree/main`, and a trailing `.git` all collapse).
+   - X/Twitter — a tweet is `owner/status/id`; the `?s=`/`?t=` share provenance that
+     differs per copy source is dropped.
    - arXiv — `abs`, `pdf`, and versioned (`v2`) forms collapse to the bare arXiv id.
    - Google Docs/Drive — the document id, dropping `/edit`, `/view`, and `gid=`.
 
@@ -191,9 +218,15 @@ report has two buckets, because conflating them destroys data:
 
 | Bucket | What it means | Signals | Action |
 |---|---|---|---|
-| **Same resource, two addresses** | One thing reached by a different URL | Same arXiv id; a GitHub deep link whose repo root is already saved | `--merge <keep> <drop>` — lossless |
+| **Same resource, two addresses** | One thing reached by a different URL | Same arXiv id; a repo's own front page (README, bare branch) when the root is already saved | `--merge <keep> <drop>` — lossless |
+| **A file or PR inside a saved repo** | A pointer to the specific thing, not the repo | A GitHub path below `owner/repo` that is not a front page | `--relate` — keep both |
 | **Same name, different owners** | Different things, possibly one subject | A shared repo basename across owners, reported as a **cluster** and ranked by word/tag overlap | `--relate <id> <id>` — never merge |
 | **Similar wording** (`--deep`) | Same subject, unrelated names | Weighted overlap of title (0.45), description (0.30) and tags (0.25) above 0.30 | `--relate <id> <id>` |
+
+**A deep link is not the repo.** Only a README or a bare branch view *is* the repo's front
+page. A link to one example file, a notebook, or a pull request points at the specific
+thing that was worth saving, and folding it into the root would bury exactly that. The real
+corpus has three such pairs, and all three keep both records.
 
 **Same name is not the same thing.** Four unrelated repos in this collection are called
 `skills`, so a name collision never proposes a merge — only a look. Collisions report as
@@ -254,11 +287,21 @@ carry topics that map to a shelf unambiguously, and an LLM call for
 for free. When no rule matches, the record contributes nothing and falls through to the LLM
 rather than being guessed at: a wrong group hides, an empty one surfaces in Ungrouped.
 
-**Step 1 — scrape, no LLM.** HTTP GET with a 10s timeout and a real user agent, then read
-`<title>`, `og:title`, `og:description`, `og:site_name`, and `meta[name=description]`.
-YouTube URLs go to the oEmbed endpoint instead. PDFs get a range request for the first
-64 KB, scanned for a `/Title` entry. Audio falls back to the filename, plus duration when
-it is cheap to obtain.
+**Step 1 — scrape, no LLM** (`tools/lib/scrape.mjs`). One GET per URL, 10s timeout, 8 at a
+time, reading at most 96 KB — meta tags live in the head, so there is no reason to pull a
+whole page. Extracts `og:title`, `og:description`, `og:site_name`, `<title>`, author and
+published date; YouTube goes to the oEmbed endpoint (no API key); arXiv's abstract page
+yields `citation_abstract`. A fetch failure returns `{error}` rather than throwing: across
+hundreds of URLs there will be dead links, timeouts and bot walls, and one of them must not
+stop a run. The count that answered and the count that did not are both reported.
+
+This step is what separates a description from a guess. Without it the model receives only
+a URL and must either invent a summary or return nothing — and a plausible invented
+sentence is worse than an empty one, because nothing marks it as unverified.
+
+A placeholder title from an importer (`github.com/foo/bar`, `youtu.be video`) is replaced
+by the page's own title when the scrape finds one — except for repos, where `owner/repo` is
+already the clearest name.
 
 **Step 2 — summarize.** In batches of ~20 records, the prompt is assembled from the body of
 `.claude/skills/enrich-bookmarks/SKILL.md` plus the taxonomy plus the scraped facts, and run
@@ -481,7 +524,7 @@ store is never what Pages is serving.
 | # | Scope |
 |---|---|
 | M1 | ✅ Data model, `store.mjs`, `url.mjs` (canonicalization), `validate.mjs`, 22 tests |
-| M2 | GitHub stars ✅, `dedupe` ✅; `add`, Chrome, Slack and YouTube playlists still to build |
+| M2 | GitHub stars ✅, Slack ✅, `dedupe` ✅; `add`, Chrome and YouTube playlists still to build |
 | M3 | ✅ `enrich.mjs` — scrape signals plus a deterministic classifier, then `claude -p` |
 | M4 | ✅ **Seeded** with 542 starred repos; §6.1 outcomes verified |
 | M5 | ✅ Site: browse, multi-select facets, search, sort, deep links |

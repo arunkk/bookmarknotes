@@ -16,6 +16,29 @@ export function saveStore(records, p = STORE_PATH) {
 
 const uniq = (xs) => [...new Set(xs.filter(Boolean))];
 
+/**
+ * Tag and group caps are display limits from the taxonomy, and a union can
+ * legitimately exceed them: a repo imported from stars with 8 topic tags then
+ * seen in Slack would gain a 9th and fail validation.
+ *
+ * Capping keeps the EARLIER tags and drops the incoming surplus, because the
+ * established ones are more likely to be the human's or the richer source's.
+ * Read once — this is a hot path during a bulk import.
+ */
+let limitsCache = null;
+const limits = () => {
+  if (!limitsCache) {
+    try {
+      limitsCache = loadTaxonomy().limits || {};
+    } catch {
+      limitsCache = {};
+    }
+  }
+  return limitsCache;
+};
+const capTags = (xs) => uniq(xs).slice(0, limits().maxTags ?? 8);
+const capGroups = (xs) => uniq(xs).slice(0, limits().maxGroups ?? 3);
+
 export function newRecord({
   url,
   kind = 'web',
@@ -73,8 +96,8 @@ export function mergeRecord(existing, incoming) {
     description: humanEdited
       ? existing.description
       : existing.description || incoming.description,
-    groups: uniq([...(existing.groups || []), ...(incoming.groups || [])]),
-    tags: uniq([...(existing.tags || []), ...(incoming.tags || [])]),
+    groups: capGroups([...(existing.groups || []), ...(incoming.groups || [])]),
+    tags: capTags([...(existing.tags || []), ...(incoming.tags || [])]),
     starred: existing.starred,
     notes: existing.notes,
     sources: dedupeSources([...(existing.sources || []), ...(incoming.sources || [])]),
@@ -126,8 +149,8 @@ export function mergePair(keep, drop) {
     ...keep,
     title: keep.title || drop.title,
     description: keep.description || drop.description,
-    groups: uniq([...(keep.groups || []), ...(drop.groups || [])]),
-    tags: uniq([...(keep.tags || []), ...(drop.tags || [])]),
+    groups: capGroups([...(keep.groups || []), ...(drop.groups || [])]),
+    tags: capTags([...(keep.tags || []), ...(drop.tags || [])]),
     starred: Boolean(keep.starred || drop.starred),
     notes: notes.join('\n\n'),
     sources: dedupeSources([...(keep.sources || []), ...(drop.sources || [])]),
