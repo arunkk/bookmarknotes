@@ -46,6 +46,28 @@ export function jaccard(a, b) {
   return hits / (a.size + b.size - hits);
 }
 
+/**
+ * The name a URL actually gives a project, or '' when it gives none.
+ *
+ * A trailing path segment is only a name on a code forge. Elsewhere it is
+ * routing: five unrelated ReadTheDocs pages all end in `/latest/`, and two
+ * unrelated products both end in `/chat`. Treating those as name collisions
+ * put 45 records in the "looks duplicated" queue, of which most were noise.
+ * The star-only corpus hid this because every URL was github.com/owner/repo.
+ */
+const FORGES = new Set(['github.com', 'gitlab.com', 'codeberg.org', 'bitbucket.org', 'sr.ht']);
+
+export function projectName(url) {
+  try {
+    const u = new URL(url);
+    if (!FORGES.has(u.hostname)) return '';
+    const parts = u.pathname.split('/').filter(Boolean);
+    return parts.length >= 2 ? normalizeName(parts[1]) : '';
+  } catch {
+    return '';
+  }
+}
+
 /** The repo (or file) name at the end of a URL path. */
 export const basename = (url) => {
   try {

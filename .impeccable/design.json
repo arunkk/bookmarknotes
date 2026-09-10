@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-10T00:00:00Z",
+  "title": "Design System: BookmarkNotes",
+  "extensions": {
+    "colorMeta": {
+      "void": { "role": "neutral", "displayName": "Void", "canonical": "#0f1215", "tonalRamp": ["#080a0c", "#0f1215", "#161b1f", "#232a30", "#3b454e", "#5c6a75", "#8d9aa5", "#e6ebf0"] },
+      "sheet": { "role": "neutral", "displayName": "Sheet", "canonical": "#14181c", "tonalRamp": ["#0a0c0e", "#14181c", "#1b2126", "#283037", "#404a54", "#61707c", "#92a0ac", "#e8edf2"] },
+      "raise": { "role": "neutral", "displayName": "Raise", "canonical": "#1a1f24", "tonalRamp": ["#0d1013", "#1a1f24", "#222930", "#2f3841", "#47535e", "#697786", "#99a7b5", "#eaeff4"] },
+      "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#242b31", "tonalRamp": ["#111518", "#1a1f24", "#242b31", "#333c45", "#4b5763", "#6d7c8b", "#9caab8", "#ebf0f5"] },
+      "rule-soft": { "role": "neutral", "displayName": "Rule Soft", "canonical": "#1c2227", "tonalRamp": ["#0e1114", "#1c2227", "#252d33", "#323c44", "#4a5661", "#6c7a88", "#9ba9b6", "#eaeff4"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#d9dee4", "tonalRamp": ["#1b1f24", "#2c333a", "#454e57", "#616b76", "#828d99", "#a6b0ba", "#d9dee4", "#f3f6f9"] },
+      "ink-2": { "role": "neutral", "displayName": "Ink 2", "canonical": "#98a2ac", "tonalRamp": ["#171b1f", "#262d33", "#3b444d", "#55606a", "#737e89", "#98a2ac", "#bfc7cf", "#eaeef2"] },
+      "ink-3": { "role": "neutral", "displayName": "Ink 3", "canonical": "#7c8792", "tonalRamp": ["#13171a", "#20262c", "#333b43", "#4a545d", "#636e78", "#7c8792", "#a8b1ba", "#e3e7eb"] },
+      "open": { "role": "primary", "displayName": "Outstanding Amber", "canonical": "#d9a12c", "tonalRamp": ["#2a1f0a", "#463314", "#66491c", "#8a6323", "#af7f28", "#d9a12c", "#e8bf6b", "#f7e5b8"] },
+      "keep": { "role": "primary", "displayName": "Interest Amber", "canonical": "#d9a12c", "tonalRamp": ["#2a1f0a", "#463314", "#66491c", "#8a6323", "#af7f28", "#d9a12c", "#e8bf6b", "#f7e5b8"] },
+      "settled": { "role": "secondary", "displayName": "Settled Green", "canonical": "#47a76a", "tonalRamp": ["#0d2013", "#153521", "#1f4d30", "#2a6b42", "#368a55", "#47a76a", "#7cc697", "#c4e7d1"] },
+      "settled-legible": { "role": "secondary", "displayName": "Legible Settled Green", "canonical": "#5d8f70", "tonalRamp": ["#101a14", "#1a2c21", "#264030", "#345742", "#456f56", "#5d8f70", "#8fb79e", "#cfe1d6"] },
+      "active": { "role": "tertiary", "displayName": "Filter Blue", "canonical": "#4a90e2", "tonalRamp": ["#08111c", "#0f1f33", "#16283c", "#1e3c5e", "#2b5c8f", "#4a90e2", "#87b7ee", "#cfe1f8"] }
+    },
+    "typographyMeta": {
+      "tally": { "displayName": "Tally", "purpose": "Queue bucket counts at 24px mono 700, tabular. The largest thing on the page is the amount of work outstanding." },
+      "mark": { "displayName": "Mark", "purpose": "Wordmark, dialog heading, empty-state lead, and the queue status marks at 18px mono 700." },
+      "ident": { "displayName": "Ident", "purpose": "Record identifiers and search input text at 14px mono 500; rises to 700 when a row's state is open or looks-duplicated." },
+      "body": { "displayName": "Body", "purpose": "Prose — descriptions, notes, facet labels — in system sans at 14px/1.5, capped at 74ch." },
+      "label": { "displayName": "Label", "purpose": "Metadata, counts, chips, hints and rail headings at 12px mono, tabular, 0.06em tracking on headings." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "step", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The only easing curve. Used on all 120ms colour, border and background transitions and on the settle animation." },
+      { "name": "state-shift", "value": "120ms", "purpose": "Duration for every state transition. Colour, border-color and background only — never position or size." },
+      { "name": "settle", "value": "settle 700ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The one authored moment: an emptied bucket's tally runs from settled green with a 2px rise back to rest. Nothing animates on load, and all motion is disabled under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "900px" },
+      { "name": "phone", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "The default control: square-cornered, sheet-filled, mono label. Pressed state turns label and border to filter blue.",
+      "html": "<button class=\"ds-btn\" type=\"button\">Settings</button> <button class=\"ds-btn\" type=\"button\" aria-pressed=\"true\">any</button>",
+      "css": ".ds-btn { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #98a2ac; background: #14181c; border: 1px solid #242b31; border-radius: 2px; padding: 5px 9px; cursor: pointer; transition: color 120ms cubic-bezier(0.16,1,0.3,1), border-color 120ms cubic-bezier(0.16,1,0.3,1); } .ds-btn:hover { color: #d9dee4; border-color: #39424b; } .ds-btn:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; } .ds-btn[aria-pressed=\"true\"] { color: #4a90e2; border-color: #4a90e2; }"
+    },
+    {
+      "name": "Commit Button",
+      "kind": "button",
+      "refersTo": "button-go",
+      "description": "The only filled button in the page: filter blue ground, near-black label. Hover brightens rather than changing hue.",
+      "html": "<button class=\"ds-btn-go\" type=\"submit\">Save token</button>",
+      "css": ".ds-btn-go { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 700; color: #08111c; background: #4a90e2; border: 1px solid #4a90e2; border-radius: 2px; padding: 5px 9px; cursor: pointer; transition: filter 120ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-go:hover { filter: brightness(1.08); } .ds-btn-go:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Warning State Button",
+      "kind": "button",
+      "refersTo": "button-warn",
+      "description": "Read-only / needs-a-token state. Transparent with an outstanding-amber border and label.",
+      "html": "<button class=\"ds-btn-warn\" type=\"button\">read-only — add a token</button>",
+      "css": ".ds-btn-warn { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #d9a12c; background: none; border: 1px solid #d9a12c; border-radius: 2px; padding: 4px 8px; cursor: pointer; white-space: nowrap; } .ds-btn-warn:hover { background: #2a1f0a; } .ds-btn-warn:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Mono text input on the sheet ground. Focus turns the border filter blue instead of adding a ring.",
+      "html": "<input class=\"ds-input-search\" type=\"search\" placeholder=\"Search titles, descriptions, tags, notes\">",
+      "css": ".ds-input-search { width: 100%; font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 14px; color: #d9dee4; background: #14181c; border: 1px solid #242b31; border-radius: 2px; padding: 7px 30px 7px 10px; caret-color: #4a90e2; } .ds-input-search::placeholder { color: #7c8792; } .ds-input-search:focus { border-color: #4a90e2; outline: none; }"
+    },
+    {
+      "name": "Active Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "A live filter, shown in filter blue with an authored 9px close icon. Clicking it removes the filter.",
+      "html": "<button class=\"ds-chip-filter\" type=\"button\">machine-learning <svg width=\"9\" height=\"9\" aria-hidden=\"true\" viewBox=\"0 0 16 16\"><path d=\"M4.25 4.25l7.5 7.5M11.75 4.25l-7.5 7.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"/></svg></button>",
+      "css": ".ds-chip-filter { display: inline-flex; align-items: center; gap: 4px; font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #4a90e2; background: none; border: 1px solid #4a90e2; border-radius: 2px; padding: 1px 5px; cursor: pointer; } .ds-chip-filter:hover { background: #16283c; } .ds-chip-filter:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; } .ds-chip-filter svg { display: block; }"
+    },
+    {
+      "name": "Shelf Chip",
+      "kind": "chip",
+      "refersTo": "chip-shelf",
+      "description": "A shelf a record sits on. Rides the identifier line and costs no row height; hover turns the border filter blue.",
+      "html": "<button class=\"ds-chip-shelf\" type=\"button\">infrastructure</button>",
+      "css": ".ds-chip-shelf { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #98a2ac; background: #1a1f24; border: 1px solid #242b31; border-radius: 2px; padding: 0 5px; cursor: pointer; white-space: nowrap; } .ds-chip-shelf:hover { color: #d9dee4; border-color: #4a90e2; } .ds-chip-shelf:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Rail Facet",
+      "kind": "nav",
+      "refersTo": "facet",
+      "description": "A filter in the left rail with a tabular count. Selected state is a raise ground plus a 1px filter-blue bar at the left edge — never a coloured slab.",
+      "html": "<ul class=\"ds-facets\"><li><button class=\"ds-facet\" type=\"button\"><span>machine-learning</span><span class=\"ds-facet-n\">128</span></button></li><li><button class=\"ds-facet\" type=\"button\" aria-pressed=\"true\"><span>infrastructure</span><span class=\"ds-facet-n\">64</span></button></li></ul>",
+      "css": ".ds-facets { list-style: none; margin: 0; padding: 0; width: 216px; } .ds-facet { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 8px; font-family: system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; font-size: 14px; text-align: left; color: #98a2ac; background: none; border: 0; padding: 3px 6px 3px 8px; cursor: pointer; position: relative; transition: color 120ms cubic-bezier(0.16,1,0.3,1), background 120ms cubic-bezier(0.16,1,0.3,1); } .ds-facet:hover { color: #d9dee4; background: #14181c; } .ds-facet:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; } .ds-facet[aria-pressed=\"true\"] { color: #d9dee4; background: #1a1f24; } .ds-facet[aria-pressed=\"true\"]::before { content: \"\"; position: absolute; inset-block: 0; left: 0; width: 1px; background: #4a90e2; } .ds-facet-n { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-variant-numeric: tabular-nums; color: #7c8792; } .ds-facet[aria-pressed=\"true\"] .ds-facet-n { color: #4a90e2; }"
+    },
+    {
+      "name": "Record Row",
+      "kind": "custom",
+      "refersTo": "row-action",
+      "description": "The listing unit. A status gutter mark opens the row, the identifier is mono, the description is sans clamped to one line at rest and three on hover, metadata is tabular mono, and the per-row actions sit at the right.",
+      "html": "<ol class=\"ds-rows\"><li class=\"ds-row\" data-state=\"open\"><span class=\"ds-gutter\">!</span><p class=\"ds-line\"><a class=\"ds-ident\" href=\"#\">openai/whisper</a><span class=\"ds-meta\">12.4k<span class=\"ds-dot\">/</span>python</span></p><p class=\"ds-desc\">Robust speech recognition via large-scale weak supervision.</p><span class=\"ds-acts\"><button class=\"ds-act ds-act-on\" type=\"button\" aria-label=\"Star\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.75l1.9 3.94 4.35.62-3.15 3.03.76 4.3L8 11.6l-3.86 2.04.76-4.3L1.75 6.31l4.35-.62z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg></button><button class=\"ds-act\" type=\"button\" aria-label=\"Note\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M2.75 3.25h10.5v7.5H6.5L3.5 13.25v-2.5H2.75z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg></button></span></li><li class=\"ds-row\" data-state=\"settled\"><span class=\"ds-gutter\">·</span><p class=\"ds-line\"><a class=\"ds-ident\" href=\"#\">rust-lang/rust</a><span class=\"ds-meta\">98.1k<span class=\"ds-dot\">/</span>rust</span></p><p class=\"ds-desc\">Empowering everyone to build reliable and efficient software.</p><span class=\"ds-acts\"></span></li></ol>",
+      "css": ".ds-rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid #242b31; } .ds-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 0 10px; padding: 4px 4px 5px 0; border-bottom: 1px solid #1c2227; } .ds-row:hover { background: #14181c; } .ds-gutter { grid-column: 1; grid-row: 1; font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 14px; font-weight: 700; line-height: 1.5; text-align: center; color: #242b31; user-select: none; } .ds-row[data-state=\"open\"] .ds-gutter, .ds-row[data-state=\"dup\"] .ds-gutter { color: #d9a12c; } .ds-row[data-state=\"settled\"] .ds-gutter { color: #5d8f70; } .ds-line { grid-column: 2; grid-row: 1; margin: 0; display: flex; align-items: baseline; gap: 10px; min-width: 0; } .ds-ident { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 14px; font-weight: 500; color: #d9dee4; text-decoration: none; overflow-wrap: anywhere; } .ds-row[data-state=\"open\"] .ds-ident, .ds-row[data-state=\"dup\"] .ds-ident { font-weight: 700; } .ds-ident:hover { color: #4a90e2; text-decoration: underline; } .ds-meta { margin-left: auto; flex: none; font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #7c8792; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-dot { color: #242b31; padding-inline: 5px; } .ds-desc { grid-column: 2; margin: 1px 0 0; font-family: system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; font-size: 14px; line-height: 1.45; color: #98a2ac; max-width: 74ch; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; } .ds-row:hover .ds-desc { -webkit-line-clamp: 3; } .ds-acts { grid-column: 3; grid-row: 1; display: flex; gap: 1px; align-items: center; } .ds-act { display: grid; place-items: center; width: 22px; height: 20px; color: #7c8792; background: none; border: 0; border-radius: 2px; cursor: pointer; transition: color 120ms cubic-bezier(0.16,1,0.3,1), background 120ms cubic-bezier(0.16,1,0.3,1); } .ds-act:hover { color: #d9dee4; background: #1a1f24; } .ds-act:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; } .ds-act-on { color: #d9a12c; } .ds-act svg { display: block; }"
+    },
+    {
+      "name": "Queue Bucket",
+      "kind": "custom",
+      "refersTo": "button",
+      "description": "The page's lead. Each bucket states a status mark, a 24px tabular tally, a sans label and a mono next-action hint; selecting one filters the listing. A cleared bucket shows a settled dot and a dimmed tally.",
+      "html": "<div class=\"ds-queue\"><button class=\"ds-q\" type=\"button\" data-state=\"work\"><span class=\"ds-q-mark\">!</span><span class=\"ds-q-n\">17</span><span class=\"ds-q-label\">with no shelf</span><span class=\"ds-q-do\">assign one</span></button><button class=\"ds-q\" type=\"button\" data-state=\"work\" aria-pressed=\"true\"><span class=\"ds-q-mark\">~</span><span class=\"ds-q-n\">6</span><span class=\"ds-q-label\">that look duplicated</span><span class=\"ds-q-do\">link or merge</span></button><button class=\"ds-q\" type=\"button\" data-state=\"clear\"><span class=\"ds-q-mark\">·</span><span class=\"ds-q-n\">0</span><span class=\"ds-q-label\">with no description</span><span class=\"ds-q-do\">nothing owed</span></button></div>",
+      "css": ".ds-queue { display: grid; gap: 0; background: #14181c; border-bottom: 1px solid #242b31; padding: 4px 22px 6px; } .ds-q { display: grid; grid-template-columns: 16px 5ch auto minmax(0, 1fr); align-items: baseline; gap: 0 10px; width: 100%; font-family: system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif; font-size: 14px; text-align: left; background: none; border: 0; padding: 7px 4px; cursor: pointer; transition: background 120ms cubic-bezier(0.16,1,0.3,1); } .ds-q + .ds-q { border-top: 1px solid #1c2227; } .ds-q:hover { background: #14181c; } .ds-q:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; } .ds-q[aria-pressed=\"true\"] { background: #1a1f24; } .ds-q-mark { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 18px; font-weight: 700; line-height: 1.3; color: #d9a12c; } .ds-q[data-state=\"clear\"] .ds-q-mark { color: #47a76a; } .ds-q-n { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: #d9dee4; text-align: right; } .ds-q[data-state=\"clear\"] .ds-q-n { color: #7c8792; } .ds-q-label { color: #98a2ac; font-size: 14px; } .ds-q[aria-pressed=\"true\"] .ds-q-label { color: #d9dee4; } .ds-q-do { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #7c8792; }"
+    },
+    {
+      "name": "Inline Shelf Assignment",
+      "kind": "custom",
+      "refersTo": "chip-shelf",
+      "description": "Per-row assignment without a modal: a sheet panel of shelf options indented under the record, where the selected option inverts to ink-on-void.",
+      "html": "<div class=\"ds-assign\"><p class=\"ds-assign-head\">Assign shelves — up to 3</p><div class=\"ds-assign-list\"><button class=\"ds-assign-opt\" type=\"button\">infrastructure</button><button class=\"ds-assign-opt\" type=\"button\" aria-pressed=\"true\">machine-learning</button><button class=\"ds-assign-opt\" type=\"button\">reading</button></div><p class=\"ds-assign-note\">Saved to the repository.</p></div>",
+      "css": ".ds-assign { background: #14181c; border: 1px solid #242b31; border-radius: 2px; padding: 8px 10px; max-width: 520px; } .ds-assign-head { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #7c8792; margin: 0 0 6px; } .ds-assign-list { display: flex; flex-wrap: wrap; gap: 4px; } .ds-assign-opt { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #98a2ac; background: #0f1215; border: 1px solid #242b31; border-radius: 2px; padding: 2px 7px; cursor: pointer; } .ds-assign-opt:hover { color: #d9dee4; border-color: #39424b; } .ds-assign-opt:focus-visible { outline: 2px solid #4a90e2; outline-offset: 2px; } .ds-assign-opt[aria-pressed=\"true\"] { color: #0f1215; background: #98a2ac; border-color: #98a2ac; font-weight: 700; } .ds-assign-note { font-family: \"JetBrains Mono\", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #7c8792; margin: 6px 0 0; min-height: 1.2em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Collection as a Pull Request Under Review",
+    "overview": "The page is an instrument, not a product. It is read at an evening desk with a terminal open beside the browser, so it commits to one dark ground (void) and never flips with a system preference — color-scheme: dark is declared, and there is no light variant anywhere in the stylesheet. Every screen opens with the amount of unresolved work stated as counts, and every record is a row with a status gutter, exactly the way a diff opens a line.\n\nStructure is made entirely of hairlines and gutters. There are no cards, and the stylesheet contains no box-shadow at all. Density is the point: rows are 4-5px of vertical padding on a 1px rule, descriptions clamp to one line at rest and open to three on hover or focus, and the whole listing fills the width beside a 216px rail. Nothing about the surface is designed to be cold-read by a visitor; it is designed for one owner's recall of his own material.\n\nColour is semantic and nothing else. Amber marks work outstanding, green marks settled, blue marks the active filter — and no fourth accent exists. Because colour has been spent on meaning, hierarchy is carried by type weight, monospace-versus-sans, and the four-step size ramp. The build's declared visual anti-references are the bookmark-manager card grid that shows six things at once, and the incumbent neutral list with a single teal accent.",
+    "keyCharacteristics": [
+      "One committed dark ground; no light mode, no theme toggle.",
+      "Zero shadows; structure from 1px rules, gutters and a single 26px column gap.",
+      "Three semantic accents only: amber outstanding, green settled, blue active filter.",
+      "Monospace for identifiers, tallies and metadata; system sans for prose.",
+      "Four type sizes, no literal font-size values left in the stylesheet.",
+      "A status gutter (!, ~, ·) opens every row.",
+      "Authored SVG sprite at one 1.5 stroke weight is the entire icon system, favicon included.",
+      "One authored animation: a tally settling when a bucket empties."
+    ],
+    "rules": [
+      { "name": "The Semantic Colour Rule", "body": "Amber, green and blue mean outstanding, settled and active filter. A colour is never applied for emphasis, decoration, category or delight. If a new element needs colour, it must first be assigned one of those three meanings, or it stays ink.", "section": "colors" },
+      { "name": "The Hairline Rule", "body": "Separation is a 1px rule or a gutter. Never a card, never a fill, never a shadow. A selected facet is marked by a 1px active bar at its left edge, not a coloured slab.", "section": "colors" },
+      { "name": "The Tinted Neutral Rule", "body": "Every grey in the palette is tinted from the foreground hue. No pure #888-family neutrals enter the system.", "section": "colors" },
+      { "name": "The Four Steps Rule", "body": "The ramp is exactly four sizes — 12 / 14 / 18 / 24 — exposed as tokens. No literal font-size value may enter the stylesheet; if a new element needs a size, it takes one of the four.", "section": "typography" },
+      { "name": "The Mono-Means-Measured Rule", "body": "Monospace is reserved for identifiers, counts, tags, metadata and marks. Prose in monospace, or an identifier in sans, is a category error.", "section": "typography" },
+      { "name": "The Mass-As-Information Rule", "body": "Type weight carries state. A row with work outstanding is 700; a settled row is 500. The eye must find outstanding work before reading a word.", "section": "typography" },
+      { "name": "The Measured Sticky Rule", "body": "Anything that depends on the height of the sticky block reads --top-h. Hard-coding that height is how the rail and scroll anchoring drift apart.", "section": "layout" },
+      { "name": "The One Left Edge Rule", "body": "Every full-width band uses the same max measure and gutter padding. No band gets its own inset.", "section": "layout" },
+      { "name": "The No-Shadow Rule", "body": "Zero shadows, at rest or in any state. If an element needs to feel forward, move it one step up the ground ramp or give it a hairline.", "section": "elevation" },
+      { "name": "The Three Grounds Rule", "body": "Rest is void, hover is sheet, current is raise. A fourth ground, or a coloured fill in place of one of them, is not part of the system.", "section": "elevation" },
+      { "name": "The One Stroke Weight Rule", "body": "Every icon is authored SVG at 1.5 stroke, filled only to express an on-state (the starred star). No icon font, no emoji, no glyph stand-in, and no second stroke weight.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do spend colour only on meaning: amber for outstanding, green for settled, blue for the active filter.",
+      "Do build structure from 1px hairlines (rule outside, rule-soft inside) and gutters.",
+      "Do take type sizes from the four tokens (12 / 14 / 18 / 24) and set monospace for anything measured, sans for anything written.",
+      "Do carry state with weight and ground step — 700 identifiers for open rows, raise for current — before reaching for colour.",
+      "Do derive any sticky-dependent offset from --top-h.",
+      "Do author new icons as SVG at 1.5 stroke on a 16x16 box using currentColor.",
+      "Do keep transitions to 120ms colour/border/background on the cubic-bezier(0.16, 1, 0.3, 1) curve, and honour prefers-reduced-motion.",
+      "Do cap prose measure (74ch descriptions and notes, 62ch dialog prose)."
+    ],
+    "donts": [
+      "Don't add a box-shadow. There are none in the build and depth comes from the ground ramp.",
+      "Don't wrap content in a card, or use a filled coloured slab where a 1px mark will do.",
+      "Don't introduce a fourth accent hue, a decorative colour, or a per-category colour.",
+      "Don't write a literal font-size into the stylesheet, or add a fifth size step.",
+      "Don't use an icon font, an emoji, or a text glyph as an icon — the only characters that stand alone are the three status-gutter marks, which are the diff idiom itself, not icons.",
+      "Don't add a light theme or a theme toggle; the ground is committed.",
+      "Don't animate anything besides the settling tally, and never animate on page load.",
+      "Don't use an untinted neutral grey.",
+      "Don't add onboarding, marketing copy, testimonials, adoption numbers, or anything else implying an audience. There is one owner and no visitors."
+    ]
+  }
+}

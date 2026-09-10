@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tokens, jaccard, basename, githubRepo, arxivId, contentSimilarity, normalizeName } from './similar.mjs';
+import { tokens, jaccard, basename, githubRepo, arxivId, contentSimilarity, normalizeName, projectName } from './similar.mjs';
 
 // These helpers decide which pairs a human is asked to look at. Too loose and
 // the report is noise nobody reads; too tight and real fork families are
@@ -58,4 +58,27 @@ test('normalizeName collapses punctuation so django-easy-pdf matches', () => {
 test('arxivId is read from the canonical abs form only', () => {
   assert.equal(arxivId('https://arxiv.org/abs/1706.03762'), '1706.03762');
   assert.equal(arxivId('https://github.com/o/r'), null);
+});
+
+test('a name collision only counts on a code forge', () => {
+  // Five unrelated ReadTheDocs pages all end in /latest/, and two unrelated
+  // products both end in /chat. Those are routing, not names, and treating
+  // them as collisions filled the review queue with noise.
+  assert.equal(projectName('https://pypika.readthedocs.io/en/latest/'), '');
+  assert.equal(projectName('https://mulerun.com/chat'), '');
+  assert.equal(projectName('https://www.phind.com/search'), '');
+});
+
+test('a forge URL yields the repo name', () => {
+  assert.equal(projectName('https://github.com/3b1b/manim'), 'manim');
+  assert.equal(projectName('https://github.com/ManimCommunity/manim'), 'manim');
+  assert.equal(
+    projectName('https://github.com/nigma/django-easy-pdf'),
+    projectName('https://gitlab.com/other/django_easy.pdf'),
+    'punctuation must not split a name across forges',
+  );
+});
+
+test('a forge URL with no repo yields nothing', () => {
+  assert.equal(projectName('https://github.com/temporalio'), '');
 });

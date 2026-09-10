@@ -26,7 +26,7 @@
  *   node tools/dedupe.mjs --relate <id> <id>
  */
 import { loadStore, saveStore, mergePair, relatePair } from './lib/store.mjs';
-import { arxivId, basename, githubRepo, contentSimilarity, normalizeName } from './lib/similar.mjs';
+import { arxivId, githubRepo, contentSimilarity, projectName } from './lib/similar.mjs';
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
@@ -174,7 +174,7 @@ function findCandidates(store, { deep }) {
   // --- relational: name collisions, as clusters ------------------------
   const byName = new Map();
   for (const r of store) {
-    const n = normalizeName(basename(r.url));
+    const n = projectName(r.url);
     if (n) byName.set(n, [...(byName.get(n) || []), r]);
   }
   for (const [name, members] of byName) {

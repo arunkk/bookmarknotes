@@ -4,66 +4,112 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BookmarkNotes</title>
-<meta name="description" content="A searchable index of saved links — repos, papers, videos and docs — grouped by subject.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='28'>%F0%9F%94%96</text></svg>">
+<meta name="description" content="A reviewable index of saved links — repos, papers, videos and docs — filed by shelf.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230f1215'/><path d='M9 5.5h14v21l-7-5-7 5z' fill='none' stroke='%23d9a12c' stroke-width='3' stroke-linejoin='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="masthead">
-  <div class="masthead-inner">
-    <h1 class="wordmark">bookmark<span>notes</span></h1>
+<!-- Authored icon set: one 1.5 stroke weight, no glyph stand-ins. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-star" viewBox="0 0 16 16">
+    <path d="M8 1.75l1.9 3.94 4.35.62-3.15 3.03.76 4.3L8 11.6l-3.86 2.04.76-4.3L1.75 6.31l4.35-.62z"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-star-on" viewBox="0 0 16 16">
+    <path d="M8 1.75l1.9 3.94 4.35.62-3.15 3.03.76 4.3L8 11.6l-3.86 2.04.76-4.3L1.75 6.31l4.35-.62z"
+          fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-note" viewBox="0 0 16 16">
+    <path d="M2.75 3.25h10.5v7.5H6.5L3.5 13.25v-2.5H2.75z"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-shelf" viewBox="0 0 16 16">
+    <path d="M2.25 4.75h11.5M2.25 8h11.5M2.25 11.25h6.5"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-link" viewBox="0 0 16 16">
+    <path d="M6.5 9.5l3-3M6.75 4.5l1-1a2.47 2.47 0 013.5 3.5l-1 1M9.25 11.5l-1 1a2.47 2.47 0 01-3.5-3.5l1-1"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-out" viewBox="0 0 16 16">
+    <path d="M6.5 3.25H3.25v9.5h9.5V9.5M9.75 3.25h3v3M12.25 3.75L7.5 8.5"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-close" viewBox="0 0 16 16">
+    <path d="M4.25 4.25l7.5 7.5M11.75 4.25l-7.5 7.5"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<div class="topmatter" id="topmatter">
+<header class="review">
+  <div class="review-bar">
+    <h1 class="mark">bookmarknotes</h1>
     <p class="tally" id="tally"></p>
-    <div class="search-wrap">
-      <label for="search" class="sr-only" hidden>Search bookmarks</label>
-      <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Search titles, descriptions, tags, notes">
-      <button class="clear-search" id="clear-search" type="button" title="Clear search" hidden>&times;</button>
-    </div>
-    <div class="masthead-actions">
-      <button class="btn btn-filters" id="toggle-filters" type="button" aria-expanded="false" aria-controls="rail">Filters</button>
-      <button class="btn" id="starred-only" type="button" aria-pressed="false" title="Show only starred">Starred</button>
+    <div class="review-actions">
+      <button class="mode-state" id="mode-state" type="button" hidden>read-only — add a token</button>
+      <button class="btn btn-rail" id="toggle-rail" type="button" aria-expanded="false" aria-controls="rail">Filters</button>
       <button class="btn" id="open-settings" type="button">Settings</button>
     </div>
   </div>
+
+  <div class="find">
+    <label for="search" class="vh">Search bookmarks</label>
+    <input id="search" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Search titles, descriptions, tags, notes">
+    <button class="find-clear" id="clear-search" type="button" title="Clear search" hidden>
+      <svg width="16" height="16" aria-hidden="true"><use href="#i-close"/></svg>
+    </button>
+    <label for="sort" class="vh">Sort</label>
+    <select id="sort">
+      <option value="stars">Most starred upstream</option>
+      <option value="recent">Recently added</option>
+      <option value="updated">Recently updated upstream</option>
+      <option value="title">Title A–Z</option>
+    </select>
+  </div>
+
 </header>
+
+<!-- The queue leads the page: what is outstanding, and what to do about it.
+     Its own band below the header rule, at instrument display scale. -->
+<section class="queue-band">
+  <div class="queue" id="queue" role="group" aria-label="Outstanding work"></div>
+</section>
+</div>
 
 <main class="shell">
   <nav class="rail" id="rail" aria-label="Filters">
-    <section>
+    <section class="rail-block">
       <h2>
-        Groups
-        <button class="mode-toggle" id="group-mode" type="button" title="Switch between matching all or any selected group">any</button>
+        Shelves
+        <button class="mode" id="group-mode" type="button"
+                title="Switch between matching any or all selected shelves">any</button>
       </h2>
       <ul class="facets" id="group-facets"></ul>
-      <p class="rail-note">A bookmark can sit in several groups at once, so counts add up to more than the total.</p>
+      <p class="rail-note">A bookmark sits on several shelves at once, so these add up to more than the total.</p>
     </section>
-    <section>
+    <section class="rail-block">
       <h2>Kind</h2>
       <ul class="facets" id="kind-facets"></ul>
     </section>
-    <section>
+    <section class="rail-block">
       <h2>Tags</h2>
       <ul class="facets" id="tag-facets"></ul>
     </section>
   </nav>
 
-  <div>
-    <div class="results-head">
-      <p class="result-count" id="result-count"></p>
-      <div class="chips-active" id="active-filters"></div>
-      <label for="sort" hidden>Sort</label>
-      <select class="sort" id="sort">
-        <option value="stars">Most starred on GitHub</option>
-        <option value="recent">Recently added</option>
-        <option value="updated">Recently updated upstream</option>
-        <option value="title">Title A–Z</option>
-      </select>
+  <div class="listing">
+    <div class="listing-head">
+      <p class="shown" id="result-count"></p>
+      <div class="active" id="active-filters"></div>
     </div>
-    <ul class="list" id="list"></ul>
-    <div class="more-wrap" id="more-wrap" hidden>
+    <ol class="rows" id="list"></ol>
+    <div class="more" id="more-wrap" hidden>
       <button class="btn" id="more" type="button">Show more</button>
     </div>
   </div>
@@ -71,22 +117,22 @@
 
 <dialog class="settings" id="settings">
   <form class="settings-body" method="dialog" id="settings-form">
-    <h2>Saving stars and notes</h2>
+    <h2>Saving stars, shelves and notes</h2>
     <p>
-      Stars and notes are written straight back to this repository as commits, so they
-      follow you to any browser. That needs a GitHub token with permission to change this
-      one repo. Without it, everything here stays readable but nothing can be edited.
+      Every edit is written back to this repository as a commit, so it follows you to any
+      browser. That needs a GitHub token with permission to change this one repo. Without
+      one, everything here stays readable and nothing can be edited.
     </p>
-    <label for="token">Fine-grained token &mdash; Contents: read and write, this repo only</label>
+    <label for="token">Fine-grained token — Contents: read and write, this repo only</label>
     <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
     <p class="settings-hint">
-      Kept in this browser only and sent only to api.github.com. Create one at
-      <code>github.com/settings/personal-access-tokens</code>. Anything you write here is
+      Held in this browser only and sent only to api.github.com. Create one at
+      <code>github.com/settings/personal-access-tokens</code>. Anything written here is
       public, because the repository is public.
     </p>
     <div class="settings-actions">
       <button class="btn" type="button" id="forget-token">Forget token</button>
-      <button class="btn btn-primary" type="submit">Save token</button>
+      <button class="btn btn-go" type="submit">Save token</button>
     </div>
   </form>
 </dialog>
