@@ -3,7 +3,10 @@ node_modules/
 .env.*
 .DS_Store
 
-# Raw source dumps — can be large and may contain private message context
+# Raw source dumps. Deliberately never committed: slack-links.json holds the
+# URLs the importer refused as unpublishable (internal mirage.percipient.ai
+# hosts, an EC2 hostname, private Google Docs, assistant session links), and
+# git history would keep them public even after a delete.
 data/inbox/*
 !data/inbox/.gitkeep
 
