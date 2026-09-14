@@ -19,6 +19,3 @@ tmp/
 *-live-*.png
 bn-*.png
 
-# Impeccable build evidence: large captures and transient decision state
-.impeccable/review/
-.impeccable/questions/
